@@ -1,0 +1,14 @@
+name: hathor-operation
+version: 0.1.0
+
+authors:
+  - ikaru5 <k.kulikov94@gmail.com>
+
+crystal: 0.34.0
+
+license: MIT
+
+development_dependencies:
+  microtest:
+    github: Ragmaanir/microtest
+    branch: master
