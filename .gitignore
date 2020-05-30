@@ -1,0 +1,7 @@
+/doc/
+/lib/
+/.crystal/
+/.shards/
+/shard.lock
+.idea
+/tmp/
