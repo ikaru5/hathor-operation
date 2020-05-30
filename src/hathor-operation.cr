@@ -86,51 +86,53 @@ module Hathor
       end
 
       def run
-        {% methods = @type.methods.map { |method| method.name.id } %}
-        {% for step_index in (1..CLASS_CONFIG[:context][:step_count]) %}
-          # raise if step calling an undefined method
-          {% if !methods.includes?(CLASS_CONFIG[step_index][:method]) %}
-            {% raise "#{@type.id}: calling undefined method '#{CLASS_CONFIG[step_index][:method]}' in a #{CLASS_CONFIG[step_index][:step_type]} macro" %}
-          {% end %}
+        {% if nil != CLASS_CONFIG[:context] %}
+          {% methods = @type.methods.map { |method| method.name.id } %}
+          {% for step_index in (1..CLASS_CONFIG[:context][:step_count]) %}
+            # raise if step calling an undefined method
+            {% if !methods.includes?(CLASS_CONFIG[step_index][:method]) %}
+              {% raise "#{@type.id}: calling undefined method '#{CLASS_CONFIG[step_index][:method]}' in a #{CLASS_CONFIG[step_index][:step_type]} macro" %}
+            {% end %}
 
-          {% if [:policy, :step].includes? CLASS_CONFIG[step_index][:step_type] %}
-            if success?
-              ret_val = {{CLASS_CONFIG[step_index][:method]}}
-              new_status = !(ret_val.nil? || false == ret_val)
-              update_operation_state(
-                new_status,
-                "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
-              )
-            end
-          {% end %}
-          {% if :strict_policy == CLASS_CONFIG[step_index][:step_type] %}
-            if success?
-              ret_val = {{CLASS_CONFIG[step_index][:method]}}
-              new_status = !(ret_val.nil? || false == ret_val)
-              update_operation_state(
-                new_status,
-                "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
-              )
-              return self if ret_val.nil? || ret_val == false
-            end
-          {% end %}
-          {% if :success == CLASS_CONFIG[step_index][:step_type] %}
-            if success?
-              ret_val = {{CLASS_CONFIG[step_index][:method]}}
-              update_operation_state(
-                true,
-                "success step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
-              )
-            end
-          {% end %}
-          {% if :failure == CLASS_CONFIG[step_index][:step_type] %}
-            if failure?
-              ret_val = {{CLASS_CONFIG[step_index][:method]}}
-              update_operation_state(
-                true,
-                "failure step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
-              )
-            end
+            {% if [:policy, :step].includes? CLASS_CONFIG[step_index][:step_type] %}
+              if success?
+                ret_val = {{CLASS_CONFIG[step_index][:method]}}
+                new_status = !(ret_val.nil? || false == ret_val)
+                update_operation_state(
+                  new_status,
+                  "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
+                )
+              end
+            {% end %}
+            {% if :strict_policy == CLASS_CONFIG[step_index][:step_type] %}
+              if success?
+                ret_val = {{CLASS_CONFIG[step_index][:method]}}
+                new_status = !(ret_val.nil? || false == ret_val)
+                update_operation_state(
+                  new_status,
+                  "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
+                )
+                return self if ret_val.nil? || ret_val == false
+              end
+            {% end %}
+            {% if :success == CLASS_CONFIG[step_index][:step_type] %}
+              if success?
+                ret_val = {{CLASS_CONFIG[step_index][:method]}}
+                update_operation_state(
+                  true,
+                  "success step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
+                )
+              end
+            {% end %}
+            {% if :failure == CLASS_CONFIG[step_index][:step_type] %}
+              if failure?
+                ret_val = {{CLASS_CONFIG[step_index][:method]}}
+                update_operation_state(
+                  true,
+                  "failure step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
+                )
+              end
+            {% end %}
           {% end %}
         {% end %}
         return self
