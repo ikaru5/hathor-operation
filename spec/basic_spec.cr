@@ -39,16 +39,20 @@ describe TestOperationBasics do
   test "it must run without data" do
     operation = TestOperation.run(param: "test")
     assert operation.success?
+    assert operation.success?(:some_step!)
+    assert operation.success?(:some_step!, :step)
+    assert operation.failure?(:some_foo_step!, :step)
+    assert operation.failure?(:some_foo_step!)
     assert !operation.failure?
     assert 9 == operation.counter
     assert 7 ==  operation.log.entries.size
-    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperation", force: false, message: nil}) ==  operation.log.entries[0]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[1]
-    assert ({status: true, reason: "step: some_other_step", force: false, message: nil}) ==  operation.log.entries[2]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[3]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[4]
-    assert ({status: true, reason: "step: return_param!", force: false, message: nil}) ==  operation.log.entries[5]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[6]
+    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperation", step: nil, step_type: nil, force: false, message: nil}) ==  operation.log.entries[0]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[1]
+    assert ({status: true, reason: "step: some_other_step", step: :some_other_step, step_type: :step, force: false, message: nil}) ==  operation.log.entries[2]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[3]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[4]
+    assert ({status: true, reason: "step: return_param!", step: :return_param!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[5]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[6]
     assert operation.log.to_s == operation.log.to_s(steps_only: true)
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(steps_only: true, one_line: true)
 
@@ -58,12 +62,12 @@ describe TestOperationBasics do
     assert operation.failure?
     assert 8 == operation.counter
     assert 6 ==  operation.log.entries.size
-    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperation", force: false, message: nil}) ==  operation.log.entries[0]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[1]
-    assert ({status: true, reason: "step: some_other_step", force: false, message: nil}) ==  operation.log.entries[2]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[3]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[4]
-    assert ({status: false, reason: "step: return_param!", force: false, message: nil}) ==  operation.log.entries[5]
+    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperation", step: nil, step_type: nil, force: false, message: nil}) ==  operation.log.entries[0]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[1]
+    assert ({status: true, reason: "step: some_other_step", step: :some_other_step, step_type: :step, force: false, message: nil}) ==  operation.log.entries[2]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[3]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[4]
+    assert ({status: false, reason: "step: return_param!", step: :return_param!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[5]
     assert operation.log.to_s == operation.log.to_s(steps_only: true)
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(steps_only: true, one_line: true)
   end
@@ -113,26 +117,30 @@ describe TestOperationBasics do
   test "policy and failure should act accordingly" do
     operation = TestOperationWithPolicy.run(param: true)
     assert operation.success?
+    assert operation.success?(:return_param!, :policy)
+    assert operation.success?(:return_param!)
     assert 14 == operation.counter
     assert 7 ==  operation.log.entries.size
-    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", force: false, message: nil}) ==  operation.log.entries[0]
-    assert ({status: true, reason: "policy: return_param!", force: false, message: nil}) ==  operation.log.entries[1]
-    assert ({status: nil, reason: nil, force: nil, message: "Custom Message"}) ==  operation.log.entries[2]
-    assert ({status: true, reason: "strict_policy: return_other_param!", force: false, message: nil}) ==  operation.log.entries[3]
-    assert ({status: true, reason: "step: some_step!", force: false, message: nil}) ==  operation.log.entries[4]
-    assert ({status: true, reason: "step: return_param!", force: false, message: nil}) ==  operation.log.entries[5]
-    assert ({status: true, reason: "success step: return_param! - finished with 'true'", force: false, message: nil}) ==  operation.log.entries[6]
+    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil}) ==  operation.log.entries[0]
+    assert ({status: true, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil}) ==  operation.log.entries[1]
+    assert ({status: nil, reason: nil, force: nil, message: "Custom Message", step: nil, step_type: nil}) ==  operation.log.entries[2]
+    assert ({status: true, reason: "strict_policy: return_other_param!", step: :return_other_param!, step_type: :strict_policy, force: false, message: nil}) ==  operation.log.entries[3]
+    assert ({status: true, reason: "step: some_step!", step: :some_step!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[4]
+    assert ({status: true, reason: "step: return_param!", step: :return_param!, step_type: :step, force: false, message: nil}) ==  operation.log.entries[5]
+    assert ({status: true, reason: "success step: return_param! - finished with 'true'", step: :return_param!, step_type: :success, force: false, message: nil}) ==  operation.log.entries[6]
     assert operation.log.to_s != operation.log.to_s(steps_only: true)
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(one_line: true)
 
     # now let normal policy fail
     operation = TestOperationWithPolicy.run(param: false)
     assert operation.failure?
+    assert operation.failure?(:return_param!)
+    assert operation.failure?(:return_param!, :policy)
     assert 4 == operation.counter
     assert 3 ==  operation.log.entries.size
-    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", force: false, message: nil}) ==  operation.log.entries[0]
-    assert ({status: false, reason: "policy: return_param!", force: false, message: nil}) ==  operation.log.entries[1]
-    assert ({status: false, reason: "failure step: some_step! - finished with 'true'", force: false, message: nil}) ==  operation.log.entries[2]
+    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil}) ==  operation.log.entries[0]
+    assert ({status: false, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil}) ==  operation.log.entries[1]
+    assert ({status: false, reason: "failure step: some_step! - finished with 'true'", step: :some_step!, step_type: :failure, force: false, message: nil}) ==  operation.log.entries[2]
     assert operation.log.to_s == operation.log.to_s(steps_only: true)
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(one_line: true)
 
@@ -141,11 +149,10 @@ describe TestOperationBasics do
     assert operation.failure?
     assert 7 == operation.counter
     assert 4 ==  operation.log.entries.size
-    puts operation.log.to_s
-    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", force: false, message: nil}) ==  operation.log.entries[0]
-    assert ({status: true, reason: "policy: return_param!", force: false, message: nil}) ==  operation.log.entries[1]
-    assert ({status: nil, reason: nil, force: nil, message: "Custom Message"}) ==  operation.log.entries[2]
-    assert ({status: false, reason: "strict_policy: return_other_param!", force: false, message: nil}) ==  operation.log.entries[3]
+    assert ({status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil}) ==  operation.log.entries[0]
+    assert ({status: true, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil}) ==  operation.log.entries[1]
+    assert ({status: nil, reason: nil, force: nil, message: "Custom Message", step: nil, step_type: nil}) ==  operation.log.entries[2]
+    assert ({status: false, reason: "strict_policy: return_other_param!", step: :return_other_param!, step_type: :strict_policy, force: false, message: nil}) ==  operation.log.entries[3]
     assert operation.log.to_s != operation.log.to_s(steps_only: true)
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(one_line: true)
   end

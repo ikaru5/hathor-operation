@@ -62,8 +62,16 @@ module Hathor
         @status
       end
 
+      def success?(step_name : Symbol, step_type : Symbol | Nil = nil)
+        @log.success?(step_name, step_type)
+      end
+
       def failure?
         !success?
+      end
+
+      def failure?(step_name : Symbol, step_type : Symbol | Nil = nil)
+        @log.failure?(step_name, step_type)
       end
 
       def self.run(*args, **options)
@@ -79,6 +87,16 @@ module Hathor
         end
 
         @log.add(@status, log_reason, force)
+      end
+
+      def update_operation_state(new_status : Bool, step : Symbol, step_type : Symbol, log_reason = "updated without submitting reason", force = false)
+        if force
+          @status = new_status
+        else
+          @status = @status && new_status
+        end
+
+        @log.add(@status, log_reason, step, step_type, force)
       end
 
       private def log(message : String)
@@ -100,6 +118,8 @@ module Hathor
                 new_status = !(ret_val.nil? || false == ret_val)
                 update_operation_state(
                   new_status,
+                  :{{CLASS_CONFIG[step_index][:method].id}},
+                  :{{CLASS_CONFIG[step_index][:step_type].id}},
                   "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
                 )
               end
@@ -110,6 +130,8 @@ module Hathor
                 new_status = !(ret_val.nil? || false == ret_val)
                 update_operation_state(
                   new_status,
+                  :{{CLASS_CONFIG[step_index][:method].id}},
+                  :{{CLASS_CONFIG[step_index][:step_type].id}},
                   "{{CLASS_CONFIG[step_index][:step_type].id}}: {{CLASS_CONFIG[step_index][:method]}}"
                 )
                 return self if ret_val.nil? || ret_val == false
@@ -120,6 +142,8 @@ module Hathor
                 ret_val = {{CLASS_CONFIG[step_index][:method]}}
                 update_operation_state(
                   true,
+                  :{{CLASS_CONFIG[step_index][:method].id}},
+                  :{{CLASS_CONFIG[step_index][:step_type].id}},
                   "success step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
                 )
               end
@@ -129,6 +153,8 @@ module Hathor
                 ret_val = {{CLASS_CONFIG[step_index][:method]}}
                 update_operation_state(
                   true,
+                  :{{CLASS_CONFIG[step_index][:method].id}},
+                  :{{CLASS_CONFIG[step_index][:step_type].id}},
                   "failure step: {{CLASS_CONFIG[step_index][:method]}} - finished with '#{ret_val}'"
                 )
               end

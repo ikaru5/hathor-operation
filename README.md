@@ -13,7 +13,9 @@ Inspired by Ruby [Trailblazer](http://trailblazer.to) Operations.
 - [Class API](#class-api)
 - [Instance API](#instance-api)
     - [success?](#success-method)
+    - [success?(:step, :step_type)](#success-step-method)
     - [failure?](#failure-method)
+    - [failure?(:step, :step_type)](#failure-step-method)
     - [log](#log)
     - [update_operation_state](#update_operation_state)
     - [run](#run)
@@ -25,7 +27,9 @@ Inspired by Ruby [Trailblazer](http://trailblazer.to) Operations.
     - [policy!](#strict-policy)
 - [Operation Logger](#operation-logger)
     - [Access the logs!](#access-the-logs)
-        - [entries!](#entries)
+        - [entries](#entries)
+        - [success?(:step, :step_type)](#logger-success-step-method)
+        - [failure?(:step, :step_type)](#logger-failure-step-method)
         - [to_s](#to_s)
     - [Custom Messages](#custom-messages)
 - [Development](#development)
@@ -157,6 +161,19 @@ operation.success? # => Bool
 success? # => Bool
 ```
 
+### <a name="success-step-method"></a> success?(:step, :step_type)
+
+Get the output state of a step. Can be used within internal methods.
+
+Is a shortcut to `@log.success?(step_name, step_type = nil)`. 
+[Learn more](#logger-success-step-method)
+
+```crystal
+operation.success?(:data_valid?, :policy) # => Bool
+# or within a step or an method
+success?(:model!) # => Bool
+```
+
 ### <a name="failure-method"></a> failure?
 
 Get the current state of operation. Can be used within internal methods.
@@ -166,6 +183,19 @@ Get the current state of operation. Can be used within internal methods.
 operation.failure? # => Bool
 # or within a step
 failure? # => Bool
+```
+
+### <a name="failure-step-method"></a> failure?(:step, :step_type)
+
+Get the output state of a step. Can be used within internal methods.
+
+Is a shortcut to `@log.failure?(step_name, step_type = nil)`. 
+[Learn more](#logger-failure-step-method)
+
+```crystal
+operation.failure?(:data_valid?, :policy) # => Bool
+# or within a step or an method
+failure?(:model!) # => Bool
 ```
 
 ### log
@@ -274,16 +304,51 @@ It is used for logging the internal flow, but can also be used to log some custo
 The logs can be accessed through `entries`:
 ```crystal
 # entries(steps_only = false)
-operation.log.entries # => Array({ status: Bool | Nil, reason: String | Nil, force: Bool | Nil, message: String | Nil })
+operation.log.entries
+#  => Array({ 
+#    status: Bool | Nil, 
+#    reason: String | Nil, 
+#    step: Symbol | Nil, 
+#    step_type: Symbol | Nil, 
+#    force: Bool | Nil, 
+#    message: String | Nil 
+#  })
 # example:
 # [
-#   {status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", force: false, message: nil}, 
-#   {status: true, reason: "policy: return_param!", force: false, message: nil}, 
-#   {status: nil, reason: nil, force: nil, message: "Custom Message"}, 
-#   {status: false, reason: "strict_policy: return_other_param!", force: false, message: nil}
+#   {status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil}, 
+#   {status: true, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil}, 
+#   {status: nil, reason: nil, step: nil, step_type: nil, force: nil, message: "Custom Message"}, 
+#   {status: false, reason: "strict_policy: return_other_param!", step: :return_other_param!, step_type: :strict_policy, force: false, message: nil}
 # ]
 operation.log.entries(true) # => will filter all custom messages
 ```
+
+### <a name="logger-success-step-method"></a> success?(:step, :step_type)
+
+Gets the output state of a step by iterating through log entries.
+
+**NOTE:** `success` steps for example do not change the state, so checking them with this is most likely useless. 
+
+**NOTE:** Testing an undefined step, will return that it failed.
+ 
+**NOTE:** It will return the state of the first found occurrence. Pay attention if you call same step twice! 
+
+There is a shortcut at the operation itself. 
+[Learn more](#success-step-method)
+
+```crystal
+# def success?(step_name : Symbol, step_type : Symbol | Nil = nil)
+operation.log.success?(:data_valid?, :policy) # => Bool
+# or within a step or an method
+@log.success?(:model!) # => Bool
+```
+
+### <a name="logger-failure-step-method"></a> failure?(:step, :step_type)
+
+Gets the output state of a step by iterating through log entries. Calls `!success(:step, :step_type)` internally.
+
+There is a shortcut at the operation itself. 
+[Learn more](#failure-step-method)
 
 #### to_s
 
