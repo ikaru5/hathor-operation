@@ -1,10 +1,10 @@
 name: hathor-operation
-version: 0.1.0
+version: 0.2.0
 
 authors:
   - ikaru5 <k.kulikov94@gmail.com>
 
-crystal: 0.34.0
+crystal: 0.35.1
 
 license: MIT
 
