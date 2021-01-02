@@ -157,4 +157,32 @@ describe TestOperationBasics do
     assert operation.log.to_s.gsub("\n", " ") == operation.log.to_s(one_line: true)
   end
 
+  class TestInheritingMethodsParent < Hathor::Operation
+    property counter = 0
+    
+    def some_step!
+      @counter += 1
+    end
+
+    def some_other_step!
+      @counter -= 10
+    end
+  end
+
+  class TestInheritingMethods < TestInheritingMethodsParent
+    step some_step!
+    step some_other_step!
+
+    def some_other_step!
+      @counter += 5
+    end
+  end
+
+  test "inherit methods of ancestor" do
+    operation = TestInheritingMethods.run
+    assert operation.success?
+    assert 6 == operation.counter
+    assert 3 == operation.log.entries.size
+  end
+
 end

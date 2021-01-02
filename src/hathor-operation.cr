@@ -105,10 +105,9 @@ module Hathor
 
       def run
         {% if nil != CLASS_CONFIG[:context] %}
-          {% methods = @type.methods.map { |method| method.name.id } %}
           {% for step_index in (1..CLASS_CONFIG[:context][:step_count]) %}
             # raise if step calling an undefined method
-            {% if !methods.includes?(CLASS_CONFIG[step_index][:method]) %}
+            {% if !@type.has_method?(CLASS_CONFIG[step_index][:method]) %}
               {% raise "#{@type.id}: calling undefined method '#{CLASS_CONFIG[step_index][:method]}' in a #{CLASS_CONFIG[step_index][:step_type]} macro" %}
             {% end %}
 
