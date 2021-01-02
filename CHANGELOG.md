@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.2.1
+
+- add inheritance of methods by @richardboehme
+
 ### 0.2.0
 
 - add :step and :step_type to entries of logger

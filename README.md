@@ -10,6 +10,7 @@ Inspired by Ruby [Trailblazer](http://trailblazer.to) Operations.
 - [Usage](#usage)
 - [Goals](#goals)
 - [result, params and other args](#result-params-and-other-args)
+- [Inheritance](#inheritance)
 - [Class API](#class-api)
 - [Instance API](#instance-api)
     - [success?](#success-method)
@@ -133,6 +134,11 @@ If you need something from the inside, than just access it through a getter. (`p
 
 I think this is a clean way for doing things like this in Crystal. 
 If you have other ideas, share them with me! Or contribute!
+
+## Inheritance
+
+You can inherit methods like you normally do it with crystal. 
+The macros will not be inherited.
 
 ## Class API
 
@@ -383,7 +389,6 @@ Simply add custom messages by using `add` method.
 - [ ] better logging and output to console and logs
 - [ ] maybe some more macros
 - [ ] a beautiful way to pass parameters - maybe there is none
-- [ ] inheritance support - not sure if its a good idea, since you dont want to mix up operation flow
 - [ ] ... even more possibilities
 
 ## Contributing

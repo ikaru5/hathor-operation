@@ -172,9 +172,14 @@ describe TestOperationBasics do
   class TestInheritingMethods < TestInheritingMethodsParent
     step some_step!
     step some_other_step!
+    policy passed?
 
     def some_other_step!
       @counter += 5
+    end
+
+    def passed?
+      true
     end
   end
 
@@ -182,7 +187,37 @@ describe TestOperationBasics do
     operation = TestInheritingMethods.run
     assert operation.success?
     assert 6 == operation.counter
-    assert 3 == operation.log.entries.size
+    assert 4 == operation.log.entries.size
+  end
+
+  class TestNotInheritingSteps < TestInheritingMethods
+  end
+
+  test "not inheriting steps of ancestor" do
+    operation = TestNotInheritingSteps.run
+    assert operation.success?
+    assert 0 == operation.counter
+    assert 1 == operation.log.entries.size
+  end
+
+  class TestNotInheritingStepsButMethods < TestInheritingMethods
+    policy passed?
+    step some_new_step!
+    step some_step!
+
+    def some_new_step!
+      @counter += 15
+    end
+  end
+
+  test "not inheriting steps but methods of ancestor" do
+    operation = TestNotInheritingStepsButMethods.run
+    assert operation.success?
+    assert 16 == operation.counter
+    assert 4 == operation.log.entries.size
+    assert :passed? == operation.log.entries[1][:step]
+    assert :some_new_step! == operation.log.entries[2][:step]
+    assert :some_step! == operation.log.entries[3][:step]
   end
 
 end
