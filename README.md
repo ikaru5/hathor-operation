@@ -404,6 +404,7 @@ Simply add custom messages by using `add` method.
 If you have ideas on how to develop hathor more or what features it is missing, I would love to hear about it.
 You can always contact me on [gitter](https://gitter.im/amberframework/amber) @ikaru5 or E-Mail.
 
+- [@richardboehme](https://github.com/richardboehme) Richard Böhme - maintainer
 - [@ikaru5](https://github.com/ikaru5) Kirill Kulikov - creator, maintainer
 
 ## Thanks
