@@ -38,20 +38,20 @@ Inspired by Ruby [Trailblazer](http://trailblazer.to) Operations.
 - [Contributors and Contact](#contributors-and-contact)
 - [Thanks](#thanks)
 - [Copyright](#copyright)
-        
+
 ## About
 
-If you are coming from from the Ruby and Rails world, you probably heard or used Trailblazer. 
-It adds an additional abstraction level to encapsulate your business code from the framework and adds a nice 
-syntactic sugar. 
+If you are coming from the Ruby and Rails world, you probably heard of or used Trailblazer.
+It adds an additional abstraction level to encapsulate your business code from the framework and adds nice
+syntactic sugar.
 
 On MVC you often may run into the question: "Does this complex procedure go into the controller or the model?"
 Operations are the answer to this!
-Keep your business code out of framework dependency and write it in a beautiful and readable way. 
+Keep your business code out of framework dependency and write it in a beautiful and readable way.
 
 ## Hathor Contracts
 
-If you are looking for Trailblazer-like Contracts or Representer, you may also have a look at [Hathor Contracts](https://github.com/ikaru5/hathor-contract).
+If you are looking for Trailblazer-like Contracts or Representers, you may also have a look at [Hathor Contracts](https://github.com/ikaru5/hathor-contract).
 The shards are decoupled and have no dependencies to each other.
 
 ## Installation
@@ -61,7 +61,7 @@ Add this to your application's `shard.yml`:
 ```yaml
   hathor-operation:
     github: ikaru5/hathor-operation
-    version: ~> 0.1.0
+    version: ~> 0.2.1
 ```
 
 ## Usage
@@ -74,16 +74,16 @@ class World::Create < Hathor::Operation
   property size_x : Int32
   property size_y : Int32
 
-  def initialize(@size_x : Int32, @size_y : Int32);end
+  def initialize(@size_x : Int32, @size_y : Int32); end
 
   policy! enough_ressources? # strict policy -> if it fails operation will stop there
-  policy permitted? # simple policy -> considered as a simple step, but other name 
-  step model! # step -> if fails, other steps wont run
-  step validate! 
+  policy permitted? # simple policy -> considered as a simple step, but other name
+  step model! # step -> if fails, other steps won't run
+  step validate!
   step persist!
-  success send_email! # success -> runs only if all previous steps successful, doesnt change state itself
-  failre log! # failure -> runs only if a step or simple policy failed, doesnt change state itself
-  
+  success send_email! # success -> runs only if all previous steps successful, doesn't change state itself
+  failure log! # failure -> runs only if a step or simple policy failed, doesn't change state itself
+
   # define all methods
   def enough_ressources?; true; end
   def permitted?; true; end
@@ -91,8 +91,8 @@ class World::Create < Hathor::Operation
   def validate!; true; end
   def persist!; true; end
   def send_email!; true; end
-  
-  def log 
+
+  def log
     puts @log.to_s # use the Operation Logger to get steps
   end
 end
@@ -103,23 +103,23 @@ operation = World::Create.run(size_x: 10, size_y: 10)
 # or
 operation = World::Create.new(size_x: 10, size_y: 10).run
 
-operation.success? # => true 
+operation.success? # => true
 ```
 
 ## Goals
 
-- **Performance**: Since you are using Crystal you are probably looking for something faster than Ruby. 
+- **Performance**: Since you are using Crystal you are probably looking for something faster than Ruby.
 So the main goal is not compromising performance in favor of syntactic sugar.
-- **Maintainability**: Crystal is changing pretty fast, so a lot of things may seem redundant and 
+- **Maintainability**: Crystal is changing pretty fast, so a lot of things may seem redundant and
 the code may take a few more lines than needed.
-- **Clarity and Comprehensibility**: Hathor does **not** aim to be the Crystals *high-level architecture*. 
-Its a tiny lib for syntactic sugar in big and small projects. 
+- **Clarity and Comprehensibility**: Hathor does **not** aim to be Crystal's *high-level architecture*.
+Its a tiny lib for syntactic sugar in big and small projects.
 
 ## result, params and other args
 
 If you know Trailblazer Operation you may expect a result class and options/ctx with params in your methods.
 But right now, there is no way to do this without compromising performance.
-Pass parameters like you would usually do for classes and make them instance variables. 
+Pass parameters like you would usually do for classes and make them instance variables.
 
 For example:
 Define them with `property` macro:
@@ -129,16 +129,31 @@ property model : User | Nil
 ```
 
 Define the `initialize` method like shown in [Usage](#usage) to pass params.
-Hathor Operations returns their instance and not a result. 
+Hathor Operations return their instance and not a result.
 If you need something from the inside, than just access it through a getter. (`property` macro will create one)
 
-I think this is a clean way for doing things like this in Crystal. 
+If you want to avoid private variables for nil checks you can use the [`property!`](https://crystal-lang.org/api/0.35.1/Object.html#property!(*names)-macro) macro:
+
+```crystal
+property! model : World
+
+def model!
+  self.model = World.find(1)
+end
+
+def do_something!
+  # when using normal property macro this would not compile
+  model.size_x * model.size_y
+end
+```
+
+I think this is a clean way for doing things like this in Crystal.
 If you have other ideas, share them with me! Or contribute!
 
 ## Inheritance
 
-You can inherit methods like you normally do it with crystal. 
-The macros will not be inherited.
+You can inherit methods like you normally do it with Crystal.
+Macros will not be inherited.
 
 ## Class API
 
@@ -171,7 +186,7 @@ success? # => Bool
 
 Get the output state of a step. Can be used within internal methods.
 
-Is a shortcut to `@log.success?(step_name, step_type = nil)`. 
+Is a shortcut to `@log.success?(step_name, step_type = nil)`.
 [Learn more](#logger-success-step-method)
 
 ```crystal
@@ -195,7 +210,7 @@ failure? # => Bool
 
 Get the output state of a step. Can be used within internal methods.
 
-Is a shortcut to `@log.failure?(step_name, step_type = nil)`. 
+Is a shortcut to `@log.failure?(step_name, step_type = nil)`.
 [Learn more](#logger-failure-step-method)
 
 ```crystal
@@ -209,7 +224,7 @@ failure?(:model!) # => Bool
 Getter to OperationLogger instance. Learn more: [Logger](#operation-logger)
 
 ```crystal
-operation.log.to_s # returns a formatted String with a list of all runned steps and custom messages
+operation.log.to_s # returns a formatted String with a list of all steps run and custom messages
 # or within a step
 @log.add "Custom Message" # will add a custom message to Logger
 ```
@@ -221,12 +236,12 @@ Used internally for flow control and logging. but can also be used to force a ne
 ```crystal
 # update_operation_state(new_status : Bool, log_reason = "updated without submitting reason", force = false)
 
-operation.update_operation_state(true, "I SAID IT DID NOT FAIL!", true) 
+operation.update_operation_state(true, "I SAID IT DID NOT FAIL!", true)
 ```
 
 ### run
 
-Will call  the steps and control the flow, by checking operation state and updating it using `update_operation_state`.
+Will call the steps and control the flow, by checking operation state and updating it using `update_operation_state`.
 
 ```crystal
 operation.run # returns self
@@ -234,14 +249,14 @@ operation.run # returns self
 
 ## Macros
 
-The macros are written to be straight forward and most importantly *fast* during resulting execution. 
+All macros are written to be straight forward and most importantly *fast* during resulting execution.
 The current macros build the instance method `run` during compilation, not execution! Thats great for performance.  
 
 ### step
 
 Will call the method provided. Method must return something, that is not `Nil` and not `false` to be passed!
 If it fails, operation state will change to failing.
-If a step fails, following steps wont be executed.
+If a step fails, following steps won't be executed.
 
 ```crystal
 # macro step(method, **options)
@@ -250,7 +265,7 @@ step some_method_name
 
 ### failure
 
-A failure step will only run if operation changed it state to failing. 
+A failure step will only run if operation changed it's state to failing.
 The failure step itself, always passes.
 
 Internally it will call step macro with `step method, step_type: :failure`.
@@ -262,7 +277,7 @@ failure some_method_name
 
 ### success
 
-A success step will only run if operation is in success state. 
+A success step will only run if operation is in success state.
 The success step itself, always passes.
 
 Internally it will call step macro with `step method, step_type: :success`.
@@ -274,7 +289,7 @@ success some_method_name
 
 ### policy
 
-A policy step is the same as a normal step, but will produce an according log message. 
+A policy step is the same as a normal step, but will produce an according log message.
 It may get more features in future releases.
 
 Internally it will call step macro with `step method, step_type: :policy`.
@@ -286,7 +301,7 @@ policy some_method_name
 
 ### policy!
 
-A `policy!` is a strict policy. This means, if it fails, the whole execution will be stopped and even failure steps wont be called. 
+A `policy!` is a strict policy. This means, if it fails, the whole execution will be stopped and even failure steps won't be called.
 
 Internally it will call step macro with `step method, step_type: :strict_policy`.
 
@@ -297,8 +312,8 @@ policy! some_method_name
 
 ## Operation Logger
 
-The Operation Logger is a class, witch is initialized with the operation and 
-can be accessed through the `log` property. 
+The Operation Logger is a class, witch is initialized with the operation and
+can be accessed through the `log` property.
 The first entry is created on initialize and shows that the operation has started.
 
 It is used for logging the internal flow, but can also be used to log some custom messages.
@@ -311,19 +326,19 @@ The logs can be accessed through `entries`:
 ```crystal
 # entries(steps_only = false)
 operation.log.entries
-#  => Array({ 
-#    status: Bool | Nil, 
-#    reason: String | Nil, 
-#    step: Symbol | Nil, 
-#    step_type: Symbol | Nil, 
-#    force: Bool | Nil, 
-#    message: String | Nil 
+#  => Array({
+#    status: Bool | Nil,
+#    reason: String | Nil,
+#    step: Symbol | Nil,
+#    step_type: Symbol | Nil,
+#    force: Bool | Nil,
+#    message: String | Nil
 #  })
 # example:
 # [
-#   {status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil}, 
-#   {status: true, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil}, 
-#   {status: nil, reason: nil, step: nil, step_type: nil, force: nil, message: "Custom Message"}, 
+#   {status: true, reason: "Start TestOperationBasicsTest::TestOperationWithPolicy", step: nil, step_type: nil, force: false, message: nil},
+#   {status: true, reason: "policy: return_param!", step: :return_param!, step_type: :policy, force: false, message: nil},
+#   {status: nil, reason: nil, step: nil, step_type: nil, force: nil, message: "Custom Message"},
 #   {status: false, reason: "strict_policy: return_other_param!", step: :return_other_param!, step_type: :strict_policy, force: false, message: nil}
 # ]
 operation.log.entries(true) # => will filter all custom messages
@@ -333,13 +348,13 @@ operation.log.entries(true) # => will filter all custom messages
 
 Gets the output state of a step by iterating through log entries.
 
-**NOTE:** `success` steps for example do not change the state, so checking them with this is most likely useless. 
+**NOTE:** `success` steps for example do not change the state, so checking them with this is most likely useless.
 
 **NOTE:** Testing an undefined step, will return that it failed.
- 
-**NOTE:** It will return the state of the first found occurrence. Pay attention if you call same step twice! 
 
-There is a shortcut at the operation itself. 
+**NOTE:** It will return the state of the first found occurrence. Pay attention if you call same step twice!
+
+There is a shortcut at the operation itself.
 [Learn more](#success-step-method)
 
 ```crystal
@@ -353,7 +368,7 @@ operation.log.success?(:data_valid?, :policy) # => Bool
 
 Gets the output state of a step by iterating through log entries. Calls `!success(:step, :step_type)` internally.
 
-There is a shortcut at the operation itself. 
+There is a shortcut at the operation itself.
 [Learn more](#failure-step-method)
 
 #### to_s
@@ -361,9 +376,9 @@ There is a shortcut at the operation itself.
 You can also get a formatted output with `to_s`. Great for logging and debug.
 
 ```crystal
-# to_s(one_line = false, steps_only = false) 
-# one_line = true => output wont have linebreaks
-# steps_only = true => output wont have custom messages
+# to_s(one_line = false, steps_only = false)
+# one_line = true => output won't have linebreaks
+# steps_only = true => output won't have custom messages
 operation.log.to_s # =>
 # >> Start TestOperationBasicsTest::TestOperationWithPolicy -> 'true'
 # >> policy: return_param! -> 'true'
@@ -414,6 +429,6 @@ He helped me to start with Crystal and macros. Answers questions professionally 
 
 ## Copyright
 
-Copyright (c) 2020 Kirill Kulikov <k.kulikov94@gmail.com>
+Copyright (c) 2021 Kirill Kulikov <k.kulikov94@gmail.com>
 
-`hathor-constracts` is released under the [MIT License](http://www.opensource.org/licenses/MIT).
+`hathor-operation` is released under the [MIT License](http://www.opensource.org/licenses/MIT).
