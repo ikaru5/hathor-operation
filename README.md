@@ -26,6 +26,11 @@ Inspired by Ruby [Trailblazer](http://trailblazer.to) Operations.
     - [success](#success)
     - [policy](#policy)
     - [policy!](#strict-policy)
+- [Nested Steps](#nested-steps)
+  - [Passing Variables](#passing-variables)
+    - [Default behavior](#default-behavior)
+    - [Input and Output options](#input-and-output-options)
+    - [Sync Option](#sync-option)
 - [Operation Logger](#operation-logger)
     - [Access the logs!](#access-the-logs)
         - [entries](#entries)
@@ -250,11 +255,13 @@ operation.run # returns self
 ## Macros
 
 All macros are written to be straight forward and most importantly *fast* during resulting execution.
-The current macros build the instance method `run` during compilation, not execution! Thats great for performance.  
+The current macros build the instance method `run` during compilation, not execution! Thats great for performance.
+
+Instead of passing a method name it's also possible to pass another nested operation. [Learn more](#nested-steps)
 
 ### step
 
-Will call the method provided. Method must return something, that is not `Nil` and not `false` to be passed!
+Will call the method provided. Method must return something that is not `Nil` and not `false` to be passed!
 If it fails, operation state will change to failing.
 If a step fails, following steps won't be executed.
 
@@ -309,6 +316,118 @@ Internally it will call step macro with `step method, step_type: :strict_policy`
 # macro policy!(method, **options)
 policy! some_method_name
 ```
+
+## Nested Steps
+
+Instead of passing a method to one of the above step macros you can also pass another `Hathor::Operation` class. This will add a method to your operation that executes the nested operation and returns whether the operation was successful.
+
+Simplified a generated method would look like this:
+
+```crystal
+def nested_run!
+  operation = Your::Nested::Operation.new
+  operation.run
+  operation.success?
+end
+```
+
+The operation that was run will be available as a `property!` on the parent operation and is named using the class name of the nested operation (underscored). If you run operations multiple times an index will be added to the name. An example:
+
+```crystal
+class Base < Hathor::Operation
+  step Nested
+  success Nested
+  step do_something!
+
+  def do_something!
+    # you can access this.nested and this.nested_2 in this method
+  end
+end
+```
+
+**NOTE:** Hathor will not catch cyclic nested dependencies. You have to take care of that by yourself.
+
+### Passing Variables
+
+By default Hathor passes all properties between both operations that occur in the constructor of the nested operation. It's also possible to explicitly pass variables by using the options `input`, `output` and `sync`. Note that shallow copies of the properties will always be passed.
+
+#### Default behavior
+
+If no explicit option is given, Hathor will pass all properties to the nested operation that are in it's constructor and are available in the base operation. See the following example:
+
+```crystal
+class Base < Hathor::Operation
+  property x = "nested", y = ""
+  step Nested
+end
+
+class Nested < Hathor::Operation
+  property x : String
+  property y
+  def initialize(@x, @y = ""); end
+
+  step pass_to_y!
+
+  def pass_to_y!
+    @y = x
+  end
+end
+```
+
+The `x` property of the Base operation will be implicitly passed to the nested operation. The `y` property will be written back to the Base operation after being modified by the nested operation. This means `y` in Base will be `"nested"` after execution.
+
+#### Input and Output options
+
+It's possible to explicitly control property-flow by using the input and output options. Both options accept Tuples and NamedTuples. One may also use Arrays or Hashes in the same way.
+
+When using Tuples or Arrays Hathor expects both operations to have the same matching property.
+
+If the properties have different names you can pass a NamedTuple or a Hash to rename properties. The key will always be the property name of the nested operation, while the value has to be the property of the base operation. 
+
+```crystal
+class Base < Hathor::Operation
+  property x = 1, z = 0
+
+  step Nested, input: { y: x }, output: { z }
+end
+
+class Nested < Hathor::Operation
+  property y : Int32, z = 0
+
+  def initialize(@y); end
+
+  step add!
+
+  def add!
+    @z = @y + 5
+  end
+end
+```
+
+#### Sync Option
+
+Using the sync option Hathor will pass a variable to the nested operation and write it back to the base operation. It's similar to passing the same value to the input and output options.
+
+```crystal
+class Base < Hathor::Operation
+  property x = 1
+  # step Nested, input: { y: x }, output: { y: x } will be the same as
+  step Nested, sync: { y: x }
+end
+
+class Nested < Hathor::Operation
+  property y : Int32
+
+  def initialize(@y); end
+
+  step add!
+
+  def add!
+    @y += 5
+  end
+end
+```
+
 
 ## Operation Logger
 
