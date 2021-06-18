@@ -33,6 +33,31 @@ describe NestedOperations do
     assert result.base_4.success?
   end
 
+  class Namespaced::ClassExample < Hathor::Operation
+    property x : Int32
+
+    def initialize(@x); end
+
+    step increment!
+
+    def increment!
+      self.x += 1
+    end
+  end
+
+  class Namespaced::Base < Hathor::Operation
+    property x = 0
+
+    step Namespaced::ClassExample
+  end
+
+  test "allow namespaced class names" do
+    result = Namespaced::Base.run
+    assert result.success?
+    assert result.namespaced__class_example.success?
+    assert result.x == 1
+  end
+
   class NamedTuple < Hathor::Operation
     property x = "x"
     property y = "y"

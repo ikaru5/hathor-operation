@@ -28,7 +28,7 @@ module Hathor
     macro step(method, **options)
       {% if method.is_a?(Path) %}
         {%
-          step_name = method.id.underscore
+          step_name = method.id.underscore.gsub(/:/, "_")
 
           if nil == STEPS_TO_GENERATE[:context]
             STEPS_TO_GENERATE[:context] = {} of Nil => Nil
