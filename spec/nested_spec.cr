@@ -29,6 +29,7 @@ describe NestedOperations do
     assert result.failure?
     assert result.base_2.failure?
     assert result.base.success?
+    assert result.base_1.success?
     assert result.base_3.failure?
     assert result.base_4.success?
   end

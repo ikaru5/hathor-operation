@@ -2,15 +2,14 @@ module Hathor
   module NestedMacro
 
     # This macro will generate all methods needed to execute nested operations.
-    # It uses the constant STEPS_TO_GENERATE to generate the methods 
-    # according to passed io options
+    # It uses CLASS_CONFIG[:context][:nested] to generate the methods according to passed io options 
     macro __nested_defs
-      {% if nil != STEPS_TO_GENERATE[:context] %}
-        {% for step_index in (1..STEPS_TO_GENERATE[:context][:step_count]) %}
+      {% if nil != CLASS_CONFIG[:context] && CLASS_CONFIG[:context][:nested] %}
+        {% for step_index in (0..(CLASS_CONFIG[:context][:nested][:step_count] - 1)) %}
           {%
-            step_name = STEPS_TO_GENERATE[step_index][:step_name]
-            options = STEPS_TO_GENERATE[step_index][:options]
-            operation_class = STEPS_TO_GENERATE[step_index][:class]
+            step_name = CLASS_CONFIG[:context][:nested][:steps][step_index][:name_with_index]
+            options = CLASS_CONFIG[:context][:nested][:steps][step_index][:options]
+            operation_class = CLASS_CONFIG[:context][:nested][:steps][step_index][:class]
 
             input = options[:input]
             output = options[:output]
