@@ -1,6 +1,6 @@
 # Changelog
 
-### Unreleased
+### 0.3.0
 
 - add nested operation support by @richardboehme
 
@@ -17,4 +17,4 @@ methods to Logger and shortcuts to operation
 
 ### 0.1.0
 
-- Extract to shard: contracts where developed within an active project, now its time to separate them
+- Extract to shard: operations where developed within an active project, now its time to separate them
