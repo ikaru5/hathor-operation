@@ -2,20 +2,34 @@ module Hathor
   class OperationLogger
 
     def initialize(operation_name = "")
-      @entries = Array({ status: Bool | Nil, reason: String | Nil, step: Symbol | Nil, step_type: Symbol | Nil, force: Bool | Nil, message: String | Nil }).new
-      @entries << { status: true, reason: "Start #{operation_name}", force: false, message: nil, step: nil, step_type: nil }
+      @entries = Array(
+        {
+          status: Bool | Nil,
+          reason: String | Nil,
+          step: Symbol | Nil,
+          step_type: Symbol | Nil,
+          force: Bool | Nil,
+          message: String | Nil,
+          logger: OperationLogger | Nil
+        }
+      ).new
+      @entries << { status: true, reason: "Start #{operation_name}", force: false, message: nil, step: nil, step_type: nil, logger: nil }
     end
 
     def add(status : Bool, reason : String, force : Bool)
-      @entries << { status: status, reason: reason, force: force, step: nil, step_type: nil, message: nil }
+      @entries << { status: status, reason: reason, force: force, step: nil, step_type: nil, message: nil, logger: nil }
     end
 
     def add(status : Bool, reason : String, step : Symbol, step_type : Symbol, force : Bool)
-      @entries << { status: status, reason: reason, step: step, step_type: step_type, force: force, message: nil }
+      @entries << { status: status, reason: reason, step: step, step_type: step_type, force: force, message: nil, logger: nil }
     end
 
     def add(message : String)
-      @entries << { status: nil, reason: nil, force: nil, step: nil, step_type: nil, message: message }
+      @entries << { status: nil, reason: nil, force: nil, step: nil, step_type: nil, message: message, logger: nil }
+    end
+
+    def add(operation : Operation)
+      @entries << { status: nil, reason: nil, force: nil, step: nil, step_type: nil, message: nil, logger: operation.log }
     end
 
     def entries(steps_only = false)
@@ -42,14 +56,18 @@ module Hathor
     def to_s(one_line = false, steps_only = false)
       out = String.new
       entries(steps_only).each do |entry|
-        if entry[:message].nil?
+        if entry[:message]
+          out += "log message: #{entry[:message]}\n"
+        elsif logger = entry[:logger]
+          out += "\t"
+          out += logger.to_s.gsub("\n", "\n\t")
+          out += "\n"
+        else
           if entry[:force]
             out += ">> #{entry[:reason]} => '#{entry[:status]}'\n"
           else
             out += ">> #{entry[:reason]} -> '#{entry[:status]}'\n"
           end
-        else
-          out += "log message: #{entry[:message]}\n"
         end
       end
       out += ">> Operation End"

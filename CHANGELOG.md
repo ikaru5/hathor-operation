@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- add nested operation support by @richardboehme
+
 ### 0.2.1
 
 - add inheritance of methods by @richardboehme
