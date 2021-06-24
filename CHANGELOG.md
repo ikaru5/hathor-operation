@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- fix `OperationLogger#to_s` to have an overload for `OperationLogger#to_s(io : IO)` (by @richardboehme)
+
 ### 0.3.0
 
 - add nested operation support by @richardboehme
