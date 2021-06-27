@@ -78,6 +78,10 @@ module Hathor
         out
       end
     end
+    
+    def to_s(io : IO)
+      io << to_s
+    end
 
   end
 end
