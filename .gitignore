@@ -5,3 +5,4 @@
 /shard.lock
 .idea
 /tmp/
+.tool-versions
