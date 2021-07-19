@@ -5,7 +5,7 @@ authors:
   - ikaru5 <k.kulikov94@gmail.com>
   - richardboehme <richard.boehme1999@gmail.com>
 
-crystal: 0.35.1
+crystal: '>= 0.35.1, < 2.0.0'
 
 license: MIT
 
