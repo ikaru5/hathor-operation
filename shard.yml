@@ -12,4 +12,4 @@ license: MIT
 development_dependencies:
   microtest:
     github: Ragmaanir/microtest
-    branch: master
+    version: 1.2.3
