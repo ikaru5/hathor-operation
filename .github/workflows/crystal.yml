@@ -1,0 +1,26 @@
+name: Crystal
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  specs:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        crystal: [ '0.35.1', '0.36.1', '1.0.0', '1.1.0', 'nightly' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: crystal-lang/install-crystal@v1
+      with:
+        crystal: ${{ matrix.crystal }}
+    - name: Install dependencies
+      run: shards install --ignore-crystal-version
+    - name: Run specs
+      run: crystal spec
